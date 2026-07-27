@@ -1073,6 +1073,16 @@ function renderReports(){
       <button class="btn btn-primary" id="export-json" style="margin-bottom:8px;">Export Full Backup (JSON)</button>
       <button class="btn btn-ghost" id="export-csv">Export Shifts as CSV</button>
     </div>
+
+    <div class="card">
+      <div class="card-title">Restore From a Backup</div>
+      <div style="font-size:12.5px;color:var(--text-dim);line-height:1.5;margin-bottom:12px;">
+        Pick a JSON backup file you exported earlier. This replaces whatever is currently in the app with what's in that file.
+      </div>
+      <label class="btn btn-ghost" for="restore-file-input" style="display:block;text-align:center;">Choose Backup File (.json)</label>
+      <input type="file" id="restore-file-input" accept="application/json,.json" style="display:none;">
+      <div id="restore-status" style="font-size:11px;color:var(--text-faint);margin-top:8px;"></div>
+    </div>
   `;
 }
 
@@ -1344,6 +1354,40 @@ function attachViewHandlers(){
       const csv = [header, ...rows].map(r=>r.map(csvEscape).join(',')).join('\n');
       downloadFile(csv, `gig-work-tracker-shifts-${todayISO()}.csv`, 'text/csv');
       showToast('CSV downloaded');
+    };
+
+    const restoreInput = document.getElementById('restore-file-input');
+    if(restoreInput) restoreInput.onchange = (e)=>{
+      const file = e.target.files[0];
+      if(!file) return;
+      const statusEl = document.getElementById('restore-status');
+      const reader = new FileReader();
+      reader.onload = async (ev)=>{
+        try{
+          const data = JSON.parse(ev.target.result);
+          if(!Array.isArray(data.shifts) || !Array.isArray(data.fillups)){
+            throw new Error('This file is missing shifts or fillups data.');
+          }
+          const count = data.shifts.length;
+          if(!confirm(`This backup has ${count} shift(s)${data.exportedAt ? ' from '+new Date(data.exportedAt).toLocaleString() : ''}. Restoring will replace everything currently in the app. Continue?`)) {
+            restoreInput.value = '';
+            return;
+          }
+          shifts = data.shifts;
+          fillups = data.fillups;
+          customPlatforms = Array.isArray(data.customPlatforms) ? data.customPlatforms : [];
+          await saveShifts();
+          await saveFillups();
+          await saveCustomPlatforms();
+          showToast('Backup restored');
+          currentView = 'home';
+          render();
+        }catch(err){
+          statusEl.textContent = 'Could not read that file — make sure it\'s the .json backup, not the .csv.';
+          statusEl.style.color = 'var(--rose)';
+        }
+      };
+      reader.readAsText(file);
     };
   }
 }
