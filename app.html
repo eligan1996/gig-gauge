@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>GigWork</title>
+<!-- iOS home screen / standalone app behavior -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GigWork">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#12151a">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<link rel="icon" href="data:image/png;base64,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">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#12151a;
+    --surface:#1b2028;
+    --surface-2:#232a34;
+    --border:#2c3542;
+    --text:#eceef1;
+    --text-dim:#aeb4bf;      /* brighter secondary text */
+    --text-faint:#7c8492;    /* brighter tertiary text (was #576172) */
+    --amber:#f4b740;
+    --amber-dim:#8a6a25;
+    --green:#4ade80;
+    --green-dim:#265d3f;
+    --rose:#fb7185;
+    --rose-dim:#6b2f38;
+    --blue:#60a5fa;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  .num{font-family:'JetBrains Mono',monospace; font-variant-numeric:tabular-nums;}
+  .disp{font-family:'Oswald',sans-serif;}
+
+  #app{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    background:
+      radial-gradient(ellipse 600px 300px at 50% -10%, rgba(244,183,64,0.08), transparent),
+      var(--bg);
+    position:relative;
+  }
+
+  .header{
+    padding:calc(env(safe-area-inset-top, 0px) + 20px) 20px 14px;
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    border-bottom:1px solid var(--border);
+  }
+  .header .brand{
+    font-family:'Oswald',sans-serif;
+    font-weight:600;
+    font-size:18px;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+  }
+  .header .brand span{color:var(--amber);}
+  .header .date-chip{
+    font-size:11px;
+    color:var(--text-faint);
+    font-family:'JetBrains Mono',monospace;
+    letter-spacing:0.5px;
+  }
+
+  #view-container{
+    flex:1;
+    padding:16px 16px 90px;
+    overflow-y:auto;
+  }
+
+  /* ---- cards ---- */
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:16px;
+    margin-bottom:12px;
+  }
+  .card-title{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    color:var(--text-faint);
+    margin:0 0 10px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .stat-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+  .stat-box{
+    background:var(--surface-2);
+    border-radius:10px;
+    padding:12px;
+  }
+  .stat-box .label{font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.6px;font-weight:600;}
+  .stat-box .value{font-family:'Oswald',sans-serif;font-size:25px;font-weight:600;margin-top:4px;color:var(--text);}
+  .stat-box .value.green{color:var(--green);}
+  .stat-box .value.rose{color:var(--rose);}
+  .stat-box .value.amber{color:var(--amber);}
+  .stat-box .value.blue{color:var(--blue);}
+
+  /* ---- big rate display (gauge replacement) ---- */
+  .rate-wrap{display:flex;flex-direction:column;align-items:center;padding:10px 0 4px;}
+  .rate-value{
+    font-family:'Oswald',sans-serif;
+    font-size:56px;
+    font-weight:700;
+    color:var(--text);
+    line-height:1;
+  }
+  .rate-value .cents{font-size:26px;color:var(--text-dim);}
+  .rate-label{font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-top:8px;font-weight:600;}
+
+  /* ---- tabs / nav ---- */
+  .tabbar{
+    position:sticky;
+    bottom:0;
+    display:flex;
+    background:rgba(27,32,40,0.92);
+    backdrop-filter:blur(10px);
+    border-top:1px solid var(--border);
+    max-width:480px;
+    margin:0 auto;
+    width:100%;
+    padding-bottom:env(safe-area-inset-bottom, 0px);
+  }
+  .tabbar button{
+    flex:1;
+    background:none;
+    border:none;
+    color:var(--text-faint);
+    font-family:'Inter',sans-serif;
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:0.4px;
+    text-transform:uppercase;
+    padding:12px 4px 10px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:4px;
+    cursor:pointer;
+  }
+  .tabbar button svg{width:20px;height:20px;stroke:var(--text-faint);fill:none;stroke-width:1.8;}
+  .tabbar button.active{color:var(--amber);}
+  .tabbar button.active svg{stroke:var(--amber);}
+
+  /* ---- forms ---- */
+  .field{margin-bottom:12px;}
+  .field label{
+    display:block;
+    font-size:12.5px;
+    color:var(--text-dim);
+    text-transform:uppercase;
+    letter-spacing:0.6px;
+    margin-bottom:6px;
+    font-weight:600;
+  }
+  .field input, .field select{
+    width:100%;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:9px;
+    padding:11px 12px;
+    color:var(--text);
+    font-family:'JetBrains Mono',monospace;
+    font-size:15px;
+  }
+  .field input:focus, .field select:focus{outline:none;border-color:var(--amber);}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+
+  .btn{
+    width:100%;
+    padding:13px;
+    border-radius:10px;
+    border:none;
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:14px;
+    letter-spacing:0.3px;
+    cursor:pointer;
+  }
+  .btn-primary{background:var(--amber);color:#1a1305;}
+  .btn-ghost{background:var(--surface-2);color:var(--text-dim);border:1px solid var(--border);}
+  .btn-danger{background:transparent;color:var(--rose);border:1px solid var(--rose-dim);}
+  .btn-small{width:auto;padding:8px 14px;font-size:12px;border-radius:8px;}
+
+  .toggle-row{display:flex;gap:8px;margin-bottom:14px;}
+  .toggle-row button{
+    flex:1;
+    padding:10px;
+    border-radius:9px;
+    border:1px solid var(--border);
+    background:var(--surface);
+    color:var(--text-dim);
+    font-size:12px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    cursor:pointer;
+  }
+  .toggle-row button.active{background:var(--amber);color:#1a1305;border-color:var(--amber);}
+
+  .platform-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .platform-field label{display:flex;align-items:center;gap:6px;}
+  .dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0;}
+  .plat-actions{margin-left:auto;display:flex;gap:2px;}
+  .plat-icon-btn{
+    background:none;
+    border:none;
+    color:var(--text-faint);
+    cursor:pointer;
+    font-size:12px;
+    padding:2px 4px;
+    line-height:1;
+  }
+  .plat-icon-btn:active{color:var(--amber);}
+
+  .add-platform-row{
+    margin-top:2px;
+    margin-bottom:14px;
+  }
+  .add-platform-btn{
+    width:100%;
+    padding:10px;
+    border-radius:9px;
+    border:1px dashed var(--border);
+    background:transparent;
+    color:var(--text-dim);
+    font-size:12.5px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .add-platform-form{
+    display:flex;
+    gap:8px;
+    margin-top:8px;
+  }
+  .add-platform-form input{flex:1;}
+  .add-platform-form button{flex-shrink:0;}
+
+  .preview-strip{
+    display:flex;
+    justify-content:space-between;
+    background:var(--surface-2);
+    border-radius:9px;
+    padding:10px 14px;
+    margin-bottom:14px;
+    font-size:12.5px;
+    color:var(--text-dim);
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .preview-strip b{color:var(--text);font-family:'JetBrains Mono',monospace;}
+
+  .inprogress-badge{
+    display:inline-block;
+    background:var(--amber-dim);
+    color:var(--amber);
+    font-size:10px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    padding:3px 8px;
+    border-radius:12px;
+  }
+
+  /* ---- history ---- */
+  .entry-row{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:12px 14px;
+    margin-bottom:8px;
+  }
+  .entry-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px;}
+  .entry-date{font-weight:700;font-size:14px;color:var(--text);}
+  .entry-net{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;}
+  .entry-meta{display:flex;gap:12px;font-size:12.5px;color:var(--text-dim);flex-wrap:wrap;}
+  .entry-meta span b{color:var(--text);font-family:'JetBrains Mono',monospace;font-weight:600;}
+  .entry-actions{display:flex;gap:8px;margin-top:10px;}
+  .entry-actions button{
+    flex:1;
+    padding:7px;
+    font-size:11px;
+    border-radius:7px;
+    border:1px solid var(--border);
+    background:var(--surface-2);
+    color:var(--text-dim);
+    cursor:pointer;
+  }
+
+  .section-label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    color:var(--text-faint);
+    margin:20px 0 8px;
+  }
+  .section-label:first-child{margin-top:0;}
+
+  .empty{
+    text-align:center;
+    padding:40px 20px;
+    color:var(--text-faint);
+    font-size:13px;
+  }
+
+  .segmented{display:flex;background:var(--surface-2);border-radius:9px;padding:3px;margin-bottom:14px;}
+  .segmented button{
+    flex:1;
+    padding:8px;
+    border:none;
+    background:transparent;
+    color:var(--text-faint);
+    font-size:11px;
+    font-weight:600;
+    text-transform:uppercase;
+    border-radius:7px;
+    cursor:pointer;
+  }
+  .segmented button.active{background:var(--amber);color:#1a1305;}
+
+  .insight-card{
+    background:linear-gradient(135deg, rgba(244,183,64,0.08), transparent);
+    border:1px solid var(--amber-dim);
+    border-radius:12px;
+    padding:14px;
+    margin-bottom:10px;
+  }
+  .insight-card .itxt{font-size:13.5px;color:var(--text-dim);line-height:1.5;}
+  .insight-card .itxt b{color:var(--amber);font-family:'JetBrains Mono',monospace;}
+
+  .toast{
+    position:fixed;
+    bottom:80px;
+    left:50%;
+    transform:translateX(-50%);
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    padding:10px 18px;
+    border-radius:20px;
+    font-size:13px;
+    z-index:50;
+    opacity:0;
+    transition:opacity 0.25s;
+    pointer-events:none;
+  }
+  .toast.show{opacity:1;}
+
+  ::-webkit-scrollbar{width:0;height:0;}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div class="header">
+    <div class="brand">GIG<span>WORK</span></div>
+    <div class="date-chip" id="header-date"></div>
+  </div>
+  <div id="view-container"></div>
+  <nav class="tabbar" id="tabbar">
+    <button data-view="home" class="active">
+      <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+      Home
+    </button>
+    <button data-view="log">
+      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      Log
+    </button>
+    <button data-view="history">
+      <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l4 2"/></svg>
+      History
+    </button>
+    <button data-view="reports">
+      <svg viewBox="0 0 24 24"><rect x="3" y="12" width="4" height="8"/><rect x="10" y="7" width="4" height="13"/><rect x="17" y="3" width="4" height="17"/></svg>
+      Reports
+    </button>
+  </nav>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ======================= STATE ======================= */
+let shifts = [];   // {id,date,startTime,endTime,startOdo,endOdo,expenses, [platformKey]: amount...}
+let fillups = [];  // {id,date,odometer,gallons,pricePerGallon}
+let customPlatforms = []; // {key, label}
+let currentView = 'home';
+let logMode = 'shift'; // 'shift' | 'gas'
+let reportsRange = 'week'; // day|week|month|year
+let editingShiftId = null;
+let editingFillupId = null;
+let addingPlatform = false;
+let formDraft = null; // holds in-progress shift-form field values across re-renders (e.g. when adding/renaming a platform)
+let fillupIsFull = true; // toggle state for the new-fill-up form: full tank vs partial/top-off
+
+// Base platforms. Keys are permanent (used as storage field names) — do not rename existing keys.
+const BASE_PLATFORMS = [
+  {key:'uber', label:'Uber/Uber Eats', color:'#1fb6ff'},
+  {key:'lyft', label:'Lyft', color:'#fb50a8'},
+  {key:'doordash', label:'DoorDash', color:'#ff3d3d'},
+  {key:'grubhub', label:'Cash Tips', color:'#7ac142'}
+];
+// Legacy keys from earlier versions of the app, kept only so old test data still totals correctly.
+const LEGACY_PLATFORM_KEYS = ['instacart','other'];
+
+function allPlatforms(){ return [...BASE_PLATFORMS, ...customPlatforms]; }
+function isCustomPlatform(key){ return customPlatforms.some(p=>p.key===key); }
+function platformHasAnyData(key){ return shifts.some(s => (Number(s[key])||0) !== 0); }
+
+/* ======================= STORAGE =======================
+   Uses the browser's own localStorage, so data lives on THIS device only,
+   works fully offline, and survives being added to the Home Screen.
+   Key names are permanent — never rename these, or existing data will
+   appear to "disappear" (it'll still be in localStorage, just orphaned). */
+const LS_SHIFTS = 'giggauge_shifts';
+const LS_FILLUPS = 'giggauge_fillups';
+const LS_CUSTOM_PLATFORMS = 'giggauge_customplatforms';
+
+async function loadData(){
+  try{
+    const raw = localStorage.getItem(LS_SHIFTS);
+    shifts = raw ? JSON.parse(raw) : [];
+  }catch(e){ shifts = []; }
+  try{
+    const raw = localStorage.getItem(LS_FILLUPS);
+    fillups = raw ? JSON.parse(raw) : [];
+  }catch(e){ fillups = []; }
+  try{
+    const raw = localStorage.getItem(LS_CUSTOM_PLATFORMS);
+    customPlatforms = raw ? JSON.parse(raw) : [];
+  }catch(e){ customPlatforms = []; }
+}
+async function saveShifts(){
+  try{ localStorage.setItem(LS_SHIFTS, JSON.stringify(shifts)); }
+  catch(e){ showToast('Save failed — storage may be full'); }
+}
+async function saveFillups(){
+  try{ localStorage.setItem(LS_FILLUPS, JSON.stringify(fillups)); }
+  catch(e){ showToast('Save failed — storage may be full'); }
+}
+async function saveCustomPlatforms(){
+  try{ localStorage.setItem(LS_CUSTOM_PLATFORMS, JSON.stringify(customPlatforms)); }
+  catch(e){ showToast('Save failed — storage may be full'); }
+}
+
+function downloadFile(content, filename, mime){
+  const blob = new Blob([content], {type: mime});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+}
+function csvEscape(v){
+  const s = String(v);
+  return /[",\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+/* ======================= HELPERS ======================= */
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+
+function todayISO(){
+  // Use LOCAL date parts, not toISOString() (which is UTC and would roll
+  // "today" over 7-8 hours early for US time zones).
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
+function fmtMoney(n){
+  if(n===null||n===undefined||isNaN(n)) return '$0.00';
+  const neg = n<0;
+  const v = Math.abs(n).toFixed(2);
+  return (neg?'-$':'$')+v;
+}
+function fmtNum(n, d=1){
+  if(n===null||n===undefined||isNaN(n)) return '0';
+  return Number(n).toFixed(d);
+}
+function fmtDateShort(iso){
+  const d = new Date(iso+'T00:00:00');
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+function fmtDateFull(iso){
+  const d = new Date(iso+'T00:00:00');
+  return d.toLocaleDateString('en-US',{weekday:'short', month:'short', day:'numeric', year:'numeric'});
+}
+function timeToMinutes(t){
+  if(!t) return null;
+  const [h,m] = t.split(':').map(Number);
+  return h*60+m;
+}
+function computeHours(startTime, endTime){
+  let s = timeToMinutes(startTime), e = timeToMinutes(endTime);
+  if(s===null||e===null) return 0;
+  let diff = e - s;
+  if(diff < 0) diff += 24*60; // overnight shift
+  return diff/60;
+}
+function isOpenShift(shift){
+  return !shift.endTime || shift.endOdo===''||shift.endOdo===null||shift.endOdo===undefined;
+}
+
+/* --- gas periods derived from fillups, sorted by odometer ---
+   A "full" fill-up closes a period and lets us compute real MPG.
+   A "partial" fill-up (a splash/top-off, not filled to the top) can't be
+   used to compute MPG on its own — its gallons and cost just get folded
+   into whichever FULL fill-up comes next, so the math stays accurate. */
+function getPeriods(){
+  const sorted = [...fillups].sort((a,b)=> a.odometer - b.odometer);
+  const periods = [];
+  let baseline = null; // {odometer, date} of the last FULL fill-up
+  let pendingGallons = 0, pendingCost = 0;
+
+  sorted.forEach(f=>{
+    const isFull = f.isFull !== false; // legacy records had no isFull field — treat as full
+    const gallons = Number(f.gallons)||0;
+    const cost = gallons * (Number(f.pricePerGallon)||0);
+
+    if(baseline === null){
+      if(isFull){
+        baseline = {odometer:f.odometer, date:f.date};
+      }
+      // a partial before any full fill-up has no baseline to measure from — skip it
+      return;
+    }
+    if(!isFull){
+      pendingGallons += gallons;
+      pendingCost += cost;
+      return; // partials don't close a period on their own
+    }
+    // this is a FULL fill-up — close out the period since the last baseline
+    const totalGallons = pendingGallons + gallons;
+    const totalCost = pendingCost + cost;
+    const milesBetween = f.odometer - baseline.odometer;
+    const mpg = totalGallons>0 ? milesBetween/totalGallons : null;
+    const blendedPrice = totalGallons>0 ? totalCost/totalGallons : (Number(f.pricePerGallon)||0);
+    periods.push({
+      startOdo: baseline.odometer,
+      endOdo: f.odometer,
+      startDate: baseline.date,
+      endDate: f.date,
+      mpg: mpg,
+      pricePerGallon: blendedPrice
+    });
+    baseline = {odometer:f.odometer, date:f.date};
+    pendingGallons = 0; pendingCost = 0;
+  });
+  return periods; // chronological by odometer
+}
+
+// Finds the MPG/price to apply to a shift: the fill-up period it falls inside;
+// otherwise the nearest period before it; otherwise (shift predates all fill-up
+// data) the EARLIEST period available — this is what lets a later fill-up
+// retroactively price gas for earlier un-priced shifts, and lets the most
+// recent known MPG keep pricing shifts going forward until a new fill-up is logged.
+function effectiveMpgForShift(shift, periods){
+  if(periods.length===0) return null;
+  let match = periods.find(p => shift.date >= p.startDate && shift.date <= p.endDate);
+  if(!match){
+    const before = periods.filter(p=>p.endDate <= shift.date).sort((a,b)=> b.endDate.localeCompare(a.endDate));
+    if(before.length) match = before[0];
+  }
+  if(!match){
+    match = periods[0];
+  }
+  return match && match.mpg ? {mpg:match.mpg, price:match.pricePerGallon} : null;
+}
+
+function deriveShift(shift, periods){
+  const open = isOpenShift(shift);
+  const hours = open ? 0 : computeHours(shift.startTime, shift.endTime);
+  const miles = open ? 0 : Math.max(0, (Number(shift.endOdo)||0) - (Number(shift.startOdo)||0));
+  const earningsByPlatform = {};
+  let totalEarnings = 0;
+  allPlatforms().forEach(p=>{
+    const v = Number(shift[p.key])||0;
+    earningsByPlatform[p.key] = v;
+    totalEarnings += v;
+  });
+  LEGACY_PLATFORM_KEYS.forEach(k=>{
+    totalEarnings += Number(shift[k])||0;
+  });
+  const expenses = Number(shift.expenses)||0;
+  const mpgInfo = open ? null : effectiveMpgForShift(shift, periods);
+  let gasCost = 0, hasGasData = false;
+  if(mpgInfo && mpgInfo.mpg > 0){
+    hasGasData = true;
+    gasCost = (miles / mpgInfo.mpg) * mpgInfo.price;
+  }
+  const net = totalEarnings - gasCost - expenses;
+  const perHourGross = hours>0 ? totalEarnings/hours : 0;
+  const perHourNet = hours>0 ? net/hours : 0;
+  return {open, hours, miles, totalEarnings, gasCost, expenses, hasGasData, net, perHourGross, perHourNet, earningsByPlatform, mpg: mpgInfo?mpgInfo.mpg:null};
+}
+
+function allDerivedShifts(){
+  const periods = getPeriods();
+  return shifts.map(s => ({...s, d: deriveShift(s, periods)}));
+}
+
+function sumAgg(list){
+  const agg = {hours:0, miles:0, totalEarnings:0, gasCost:0, expenses:0, net:0, anyGasData:false};
+  list.forEach(s=>{
+    agg.hours += s.d.hours;
+    agg.miles += s.d.miles;
+    agg.totalEarnings += s.d.totalEarnings;
+    agg.gasCost += s.d.gasCost;
+    agg.expenses += s.d.expenses;
+    agg.net += s.d.net;
+    if(s.d.hasGasData) agg.anyGasData = true;
+  });
+  agg.perHourGross = agg.hours>0 ? agg.totalEarnings/agg.hours : 0;
+  agg.perHourNet = agg.hours>0 ? agg.net/agg.hours : 0;
+  return agg;
+}
+
+function isSameDay(iso, ref){ return iso === ref; }
+function isSameWeek(iso, ref){
+  const d = new Date(iso+'T00:00:00'), r = new Date(ref+'T00:00:00');
+  // Week runs Monday–Sunday.
+  const startOfWeek = (dt)=>{
+    const x=new Date(dt);
+    const day=x.getDay(); // 0=Sun,1=Mon,...6=Sat
+    const diffToMonday = (day===0) ? -6 : 1-day;
+    x.setDate(x.getDate()+diffToMonday);
+    return x;
+  };
+  return startOfWeek(d).getTime() === startOfWeek(r).getTime();
+}
+function isSameMonth(iso, ref){
+  return iso.slice(0,7) === ref.slice(0,7);
+}
+function isSameYear(iso, ref){
+  return iso.slice(0,4) === ref.slice(0,4);
+}
+
+function weekOfMonth(iso){
+  const d = new Date(iso+'T00:00:00');
+  return Math.ceil((d.getDate())/7);
+}
+
+function hourLabel(h){
+  if(h===null||h===undefined) return '—';
+  const ampm = h<12?'AM':'PM';
+  let hh = h%12; if(hh===0) hh=12;
+  return `${hh}:00 ${ampm}`;
+}
+
+function platformLabel(key){
+  const p = allPlatforms().find(p=>p.key===key);
+  return p ? p.label : key;
+}
+
+/* Best N-hour block to start, based on full shift history (completed shifts only) */
+function computeBestBlock(derivedCompleted, blockLen){
+  const buckets = {};
+  for(let h=0;h<24;h++) buckets[h] = {hours:0, earnings:0, platformEarnings:{}};
+  derivedCompleted.forEach(s=>{
+    const sm = timeToMinutes(s.startTime);
+    if(sm===null || s.d.hours<=0) return;
+    const h = Math.floor(sm/60);
+    buckets[h].hours += s.d.hours;
+    buckets[h].earnings += s.d.totalEarnings;
+    Object.keys(s.d.earningsByPlatform).forEach(k=>{
+      buckets[h].platformEarnings[k] = (buckets[h].platformEarnings[k]||0) + s.d.earningsByPlatform[k];
+    });
+  });
+
+  let best = null;
+  for(let start=0; start<24; start++){
+    let hours=0, earnings=0; const platformEarnings={};
+    for(let i=0;i<blockLen;i++){
+      const h = (start+i)%24;
+      hours += buckets[h].hours;
+      earnings += buckets[h].earnings;
+      Object.keys(buckets[h].platformEarnings).forEach(k=>{
+        platformEarnings[k] = (platformEarnings[k]||0) + buckets[h].platformEarnings[k];
+      });
+    }
+    if(hours < 0.5) continue; // not enough data in this window
+    const rate = earnings/hours;
+    if(!best || rate > best.rate){
+      const platformsUsed = Object.keys(platformEarnings)
+        .filter(k=>platformEarnings[k]>0)
+        .sort((a,b)=>platformEarnings[b]-platformEarnings[a])
+        .map(k=>platformLabel(k));
+      best = {start, rate, platformsUsed};
+    }
+  }
+  return best;
+}
+
+function joinPlatformList(list){
+  if(!list || list.length===0) return null;
+  if(list.length===1) return list[0];
+  if(list.length===2) return list[0]+' and '+list[1];
+  return list.slice(0,-1).join(', ')+', and '+list[list.length-1];
+}
+
+/* ======================= RENDER ROOT ======================= */
+function setActiveTab(view){
+  document.querySelectorAll('.tabbar button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.view===view);
+  });
+}
+
+function render(){
+  document.getElementById('header-date').textContent = fmtDateFull(todayISO());
+  const c = document.getElementById('view-container');
+  if(currentView==='home') c.innerHTML = renderHome();
+  else if(currentView==='log') c.innerHTML = renderLog();
+  else if(currentView==='history') c.innerHTML = renderHistory();
+  else if(currentView==='reports') c.innerHTML = renderReports();
+  attachViewHandlers();
+  setActiveTab(currentView);
+}
+
+/* ======================= HOME ======================= */
+function renderHome(){
+  const today = todayISO();
+  const derived = allDerivedShifts();
+  const todayShifts = derived.filter(s=>isSameDay(s.date, today));
+  const weekShifts = derived.filter(s=>isSameWeek(s.date, today));
+  const monthShifts = derived.filter(s=>isSameMonth(s.date, today));
+
+  const tAgg = sumAgg(todayShifts);
+  const wAgg = sumAgg(weekShifts);
+  const mAgg = sumAgg(monthShifts);
+
+  const rateStr = fmtMoney(tAgg.perHourGross);
+  const [whole, cents] = rateStr.split('.');
+
+  return `
+  <div class="card">
+    <div class="card-title">Today's Rate</div>
+    <div class="rate-wrap">
+      <div class="rate-value">${whole}<span class="cents">.${cents||'00'}/hr</span></div>
+      <div class="rate-label">gross per hour, today</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Today</div>
+    <div class="stat-grid">
+      <div class="stat-box"><div class="label">Hours</div><div class="value blue num">${fmtNum(tAgg.hours)}</div></div>
+      <div class="stat-box"><div class="label">Miles</div><div class="value blue num">${fmtNum(tAgg.miles,0)}</div></div>
+      <div class="stat-box"><div class="label">Gas Cost</div><div class="value rose num">${fmtMoney(tAgg.gasCost)}</div></div>
+      <div class="stat-box"><div class="label">Net Pay</div><div class="value green num">${fmtMoney(tAgg.net)}</div></div>
+    </div>
+    ${!tAgg.anyGasData && tAgg.hours>0 ? '<div style="margin-top:10px;font-size:12px;color:var(--text-dim)">No gas data yet for this period — log a fill-up to calculate gas cost.</div>' : ''}
+  </div>
+
+  <div class="card">
+    <div class="card-title">This Week vs This Month</div>
+    <div class="stat-grid">
+      <div class="stat-box"><div class="label">Week Net</div><div class="value green num">${fmtMoney(wAgg.net)}</div></div>
+      <div class="stat-box"><div class="label">Week $/hr</div><div class="value green num">${fmtMoney(wAgg.perHourGross)}</div></div>
+      <div class="stat-box"><div class="label">Month Net</div><div class="value amber num">${fmtMoney(mAgg.net)}</div></div>
+      <div class="stat-box"><div class="label">Month $/hr</div><div class="value amber num">${fmtMoney(mAgg.perHourGross)}</div></div>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" id="home-quicklog">+ Log Today's Shift</button>
+  `;
+}
+
+/* ======================= LOG ======================= */
+function renderLog(){
+  return `
+    <div class="toggle-row">
+      <button data-mode="shift" class="${logMode==='shift'?'active':''}">Shift</button>
+      <button data-mode="gas" class="${logMode==='gas'?'active':''}">Fill-Up</button>
+    </div>
+    ${logMode==='shift' ? renderShiftForm() : renderFillupForm()}
+  `;
+}
+
+function renderShiftForm(){
+  const editing = editingShiftId ? shifts.find(s=>s.id===editingShiftId) : null;
+  const v = editing ? {...editing} : {date: todayISO(), startTime:'', endTime:'', startOdo:'', endOdo:'', expenses:''};
+  allPlatforms().forEach(p=>{ if(v[p.key]===undefined) v[p.key]=''; });
+  if(formDraft){
+    if(formDraft['f-date']!==undefined) v.date = formDraft['f-date'];
+    if(formDraft['f-start']!==undefined) v.startTime = formDraft['f-start'];
+    if(formDraft['f-end']!==undefined) v.endTime = formDraft['f-end'];
+    if(formDraft['f-startodo']!==undefined) v.startOdo = formDraft['f-startodo'];
+    if(formDraft['f-endodo']!==undefined) v.endOdo = formDraft['f-endodo'];
+    if(formDraft['f-expenses']!==undefined) v.expenses = formDraft['f-expenses'];
+    allPlatforms().forEach(p=>{ if(formDraft['f-'+p.key]!==undefined) v[p.key]=formDraft['f-'+p.key]; });
+  }
+
+  return `
+    <div class="card">
+      <div class="card-title">${editing? 'Edit Shift' : 'New Shift'}${editing && isOpenShift(v) ? ' <span class="inprogress-badge">In Progress</span>' : ''}</div>
+      <div class="field"><label>Date</label><input type="date" id="f-date" value="${v.date}"></div>
+      <div class="row2">
+        <div class="field"><label>Start Time</label><input type="time" id="f-start" value="${v.startTime}"></div>
+        <div class="field"><label>End Time</label><input type="time" id="f-end" value="${v.endTime||''}"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Start Odometer</label><input type="number" inputmode="decimal" id="f-startodo" placeholder="e.g. 40210" value="${v.startOdo}"></div>
+        <div class="field"><label>End Odometer</label><input type="number" inputmode="decimal" id="f-endodo" placeholder="e.g. 40255" value="${v.endOdo!==null&&v.endOdo!==undefined?v.endOdo:''}"></div>
+      </div>
+      <div style="font-size:12px;color:var(--text-faint);margin:-4px 0 14px;line-height:1.4;">
+        Fill in Start Time and Start Odometer when you begin driving. Come back and enter End Time and End Odometer as soon as your shift is done.
+      </div>
+
+      <div class="preview-strip">
+        <span>Hours: <b id="prev-hours">0.0</b></span>
+        <span>Miles: <b id="prev-miles">0</b></span>
+      </div>
+
+      <div class="card-title" style="margin-top:4px;">Earnings by Platform</div>
+      <div class="platform-grid">
+        ${allPlatforms().map(p=>`
+          <div class="field platform-field">
+            <label>
+              <span class="dot" style="background:${p.color}"></span>${p.label}
+              ${isCustomPlatform(p.key) ? `
+                <span class="plat-actions">
+                  <button type="button" class="plat-icon-btn" data-edit-plat="${p.key}" title="Rename">✎</button>
+                  ${!platformHasAnyData(p.key) ? `<button type="button" class="plat-icon-btn" data-del-plat="${p.key}" title="Delete">✕</button>` : ''}
+                </span>
+              ` : ''}
+            </label>
+            <input type="number" inputmode="decimal" step="0.01" id="f-${p.key}" placeholder="0.00" value="${v[p.key]}" onfocus="this.select()">
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="add-platform-row">
+        ${!addingPlatform ? `
+          <button type="button" class="add-platform-btn" id="show-add-platform">+ Add another platform</button>
+        ` : `
+          <div class="add-platform-form">
+            <input type="text" id="new-platform-name" placeholder="Platform name, e.g. Amazon Flex">
+            <button type="button" class="btn btn-primary btn-small" id="confirm-add-platform">Add</button>
+          </div>
+          <div style="font-size:11px;color:var(--text-faint);margin-top:6px;">Once added, a platform stays available for all future shifts.</div>
+        `}
+      </div>
+
+      <div class="card-title" style="margin-top:4px;">Expenses</div>
+      <div class="field">
+        <label>Other Expenses This Shift</label>
+        <input type="number" inputmode="decimal" step="0.01" id="f-expenses" placeholder="0.00" value="${v.expenses}" onfocus="this.select()">
+      </div>
+      <div style="font-size:11px;color:var(--text-faint);margin:-4px 0 14px;">
+        Parking, car wash, phone mount, etc. — add up your receipts and enter the total. Subtracted from net pay along with gas.
+      </div>
+
+      <div class="preview-strip">
+        <span>Total Earnings: <b id="prev-total">$0.00</b></span>
+      </div>
+
+      <button class="btn btn-primary" id="save-shift">${editing?'Save Changes':'Save Shift'}</button>
+      <div style="height:8px"></div>
+      <button class="btn btn-ghost" id="cancel-edit-shift">Cancel</button>
+    </div>
+  `;
+}
+
+function renderFillupForm(){
+  const editing = editingFillupId ? fillups.find(f=>f.id===editingFillupId) : null;
+  const v = editing || {date: todayISO(), odometer:'', gallons:'', pricePerGallon:''};
+  const isFull = editing ? (editing.isFull !== false) : fillupIsFull;
+  return `
+    <div class="card">
+      <div class="card-title">${editing?'Edit Fill-Up':'New Fill-Up'}</div>
+
+      <div class="toggle-row">
+        <button type="button" data-filltype="full" class="${isFull?'active':''}">Full Tank</button>
+        <button type="button" data-filltype="partial" class="${!isFull?'active':''}">Partial / Top-Off</button>
+      </div>
+
+      <div class="field"><label>Date</label><input type="date" id="g-date" value="${v.date}"></div>
+      <div class="field"><label>Odometer at Fill-Up</label><input type="number" inputmode="decimal" id="g-odo" placeholder="e.g. 40255" value="${v.odometer}"></div>
+      <div class="row2">
+        <div class="field"><label>Gallons</label><input type="number" inputmode="decimal" step="0.001" id="g-gallons" placeholder="e.g. 10.5" value="${v.gallons}" onfocus="this.select()"></div>
+        <div class="field"><label>Price / Gallon</label><input type="number" inputmode="decimal" step="0.001" id="g-price" placeholder="e.g. 4.59" value="${v.pricePerGallon}" onfocus="this.select()"></div>
+      </div>
+      <div class="preview-strip">
+        <span>Total Paid: <b id="prev-gastotal">$0.00</b></span>
+        ${isFull ? '<span>MPG since last full tank: <b id="prev-mpg">—</b></span>' : ''}
+      </div>
+      ${isFull ? `
+        <div style="font-size:11px;color:var(--text-faint);margin-bottom:14px;line-height:1.5;">
+          Enter the odometer reading every time you fill all the way to the top. The miles and gallons since your last full tank give your MPG, which prices gas for every shift in between.
+        </div>
+      ` : `
+        <div style="font-size:11px;color:var(--text-faint);margin-bottom:14px;line-height:1.5;">
+          Use this for a splash or top-off that doesn't fill the tank all the way — like grabbing $10 at one station before driving to a cheaper one. These gallons and this cost get added into whichever <b style="color:var(--text-dim)">full</b> fill-up you log next, so your MPG still comes out accurate.
+        </div>
+      `}
+      <button class="btn btn-primary" id="save-fillup">${editing?'Save Changes':'Save Fill-Up'}</button>
+      <div style="height:8px"></div>
+      <button class="btn btn-ghost" id="cancel-edit-fillup">Cancel</button>
+    </div>
+  `;
+}
+
+/* ======================= HISTORY ======================= */
+function renderHistory(){
+  const periods = getPeriods();
+  const derived = [...shifts].sort((a,b)=> b.date.localeCompare(a.date) || (b.startTime||'').localeCompare(a.startTime||''))
+    .map(s=>({...s, d: deriveShift(s, periods)}));
+
+  const fillupsSorted = [...fillups].sort((a,b)=> b.date.localeCompare(a.date));
+
+  let html = '';
+  html += `<div class="section-label">Shifts (${derived.length})</div>`;
+  if(derived.length===0){
+    html += `<div class="empty">No shifts logged yet.<br>Tap Log below to add your first one.</div>`;
+  } else {
+    derived.forEach(s=>{
+      if(s.d.open){
+        html += `
+          <div class="entry-row">
+            <div class="entry-top">
+              <div class="entry-date">${fmtDateShort(s.date)}</div>
+              <span class="inprogress-badge">In Progress</span>
+            </div>
+            <div class="entry-meta">
+              <span>started <b>${s.startTime||'—'}</b></span>
+              <span>start odo <b>${fmtNum(s.startOdo,0)}</b></span>
+            </div>
+            <div class="entry-actions">
+              <button data-edit-shift="${s.id}">Finish Shift</button>
+              <button data-del-shift="${s.id}">Delete</button>
+            </div>
+          </div>
+        `;
+      } else {
+        html += `
+          <div class="entry-row">
+            <div class="entry-top">
+              <div class="entry-date">${fmtDateShort(s.date)}</div>
+              <div class="entry-net num" style="color:${s.d.net>=0?'var(--green)':'var(--rose)'}">${fmtMoney(s.d.net)}</div>
+            </div>
+            <div class="entry-meta">
+              <span><b>${fmtNum(s.d.hours)}</b>h</span>
+              <span><b>${fmtNum(s.d.miles,0)}</b> mi</span>
+              <span>earn <b>${fmtMoney(s.d.totalEarnings)}</b></span>
+              <span>gas <b>${fmtMoney(s.d.gasCost)}</b></span>
+              <span><b>${fmtMoney(s.d.perHourGross)}</b>/hr</span>
+            </div>
+            <div class="entry-actions">
+              <button data-edit-shift="${s.id}">Edit</button>
+              <button data-del-shift="${s.id}">Delete</button>
+            </div>
+          </div>
+        `;
+      }
+    });
+  }
+
+  html += `<div class="section-label">Fill-Ups (${fillupsSorted.length})</div>`;
+  if(fillupsSorted.length===0){
+    html += `<div class="empty">No fill-ups logged yet.</div>`;
+  } else {
+    fillupsSorted.forEach(f=>{
+      const isFull = f.isFull !== false;
+      const p = isFull ? periods.find(p=>p.endDate===f.date && p.endOdo===f.odometer) : null;
+      html += `
+        <div class="entry-row">
+          <div class="entry-top">
+            <div class="entry-date">${fmtDateShort(f.date)} ${isFull ? '' : '<span class="inprogress-badge" style="background:var(--surface-2);color:var(--text-dim);">Partial</span>'}</div>
+            <div class="entry-net num">${fmtMoney(f.gallons*f.pricePerGallon)}</div>
+          </div>
+          <div class="entry-meta">
+            <span>odo <b>${fmtNum(f.odometer,0)}</b></span>
+            <span><b>${fmtNum(f.gallons,2)}</b> gal</span>
+            <span><b>${fmtMoney(f.pricePerGallon)}</b>/gal</span>
+            ${isFull ? `<span>MPG <b>${p&&p.mpg?fmtNum(p.mpg,1):'—'}</b></span>` : `<span style="color:var(--text-faint)">rolls into next full tank</span>`}
+          </div>
+          <div class="entry-actions">
+            <button data-edit-fillup="${f.id}">Edit</button>
+            <button data-del-fillup="${f.id}">Delete</button>
+          </div>
+        </div>
+      `;
+    });
+  }
+  return html;
+}
+
+/* ======================= REPORTS ======================= */
+function renderReports(){
+  const today = todayISO();
+  const derived = allDerivedShifts();
+  const completed = derived.filter(s=>!s.d.open);
+
+  let filtered;
+  if(reportsRange==='day') filtered = derived.filter(s=>isSameDay(s.date,today));
+  else if(reportsRange==='week') filtered = derived.filter(s=>isSameWeek(s.date,today));
+  else if(reportsRange==='month') filtered = derived.filter(s=>isSameMonth(s.date,today));
+  else filtered = derived.filter(s=>isSameYear(s.date,today));
+
+  const agg = sumAgg(filtered);
+
+  // Best hour of day (single-hour view, kept for the month/year insight cards below)
+  // Best week of this month
+  const monthShifts = completed.filter(s=>isSameMonth(s.date, today));
+  const weekBuckets = {};
+  monthShifts.forEach(s=>{
+    const w = weekOfMonth(s.date);
+    weekBuckets[w] = (weekBuckets[w]||0) + s.d.net;
+  });
+  let bestWeek = null, bestWeekVal = -Infinity;
+  Object.keys(weekBuckets).forEach(w=>{
+    if(weekBuckets[w]>bestWeekVal){ bestWeekVal = weekBuckets[w]; bestWeek = Number(w); }
+  });
+
+  // Best month of this year
+  const yearShifts = completed.filter(s=>isSameYear(s.date, today));
+  const monthBuckets = {};
+  yearShifts.forEach(s=>{
+    const m = s.date.slice(0,7);
+    monthBuckets[m] = (monthBuckets[m]||0) + s.d.net;
+  });
+  let bestMonth = null, bestMonthVal = -Infinity;
+  Object.keys(monthBuckets).forEach(m=>{
+    if(monthBuckets[m]>bestMonthVal){ bestMonthVal = monthBuckets[m]; bestMonth = m; }
+  });
+
+  function monthLabel(m){
+    if(!m) return '—';
+    const d = new Date(m+'-01T00:00:00');
+    return d.toLocaleDateString('en-US',{month:'long', year:'numeric'});
+  }
+
+  const block2 = computeBestBlock(completed, 2);
+  const block4 = computeBestBlock(completed, 4);
+
+  return `
+    <div class="segmented">
+      <button data-range="day" class="${reportsRange==='day'?'active':''}">Day</button>
+      <button data-range="week" class="${reportsRange==='week'?'active':''}">Week</button>
+      <button data-range="month" class="${reportsRange==='month'?'active':''}">Month</button>
+      <button data-range="year" class="${reportsRange==='year'?'active':''}">Year</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Summary — ${reportsRange==='day'?'Today':reportsRange==='week'?'This Week':reportsRange==='month'?'This Month':'This Year'}</div>
+      <div class="stat-grid">
+        <div class="stat-box"><div class="label">Hours</div><div class="value blue num">${fmtNum(agg.hours)}</div></div>
+        <div class="stat-box"><div class="label">Miles</div><div class="value blue num">${fmtNum(agg.miles,0)}</div></div>
+        <div class="stat-box"><div class="label">Earnings</div><div class="value num">${fmtMoney(agg.totalEarnings)}</div></div>
+        <div class="stat-box"><div class="label">Gas Cost</div><div class="value rose num">${fmtMoney(agg.gasCost)}</div></div>
+        <div class="stat-box"><div class="label">Expenses</div><div class="value rose num">${fmtMoney(agg.expenses)}</div></div>
+        <div class="stat-box"><div class="label">Net Pay</div><div class="value green num">${fmtMoney(agg.net)}</div></div>
+      </div>
+    </div>
+
+    <div class="section-label">Today's Best Blocks</div>
+    <div class="insight-card">
+      <div class="itxt">Best 2-hour block to start today: <b>${block2 ? hourLabel(block2.start) : '—'}</b>${block2?` — avg ${fmtMoney(block2.rate)}/hr | ${joinPlatformList(block2.platformsUsed)||'—'}`:' (not enough history yet)'}.</div>
+    </div>
+    <div class="insight-card">
+      <div class="itxt">Best 4-hour block to start today: <b>${block4 ? hourLabel(block4.start) : '—'}</b>${block4?` — avg ${fmtMoney(block4.rate)}/hr | ${joinPlatformList(block4.platformsUsed)||'—'}`:' (not enough history yet)'}.</div>
+    </div>
+    <div style="font-size:11px;color:var(--text-faint);margin:-4px 0 16px;">Based on your full shift history by start time, not just today's entries.</div>
+
+    <div class="section-label">More Insights</div>
+    <div class="insight-card">
+      <div class="itxt">This month, <b>Week ${bestWeek||'—'}</b> was your best week${bestWeek?` (net ${fmtMoney(bestWeekVal)})`:''}.</div>
+    </div>
+    <div class="insight-card">
+      <div class="itxt">This year, <b>${monthLabel(bestMonth)}</b> was your best month${bestMonth?` (net ${fmtMoney(bestMonthVal)})`:''}.</div>
+    </div>
+    ${completed.length===0?'<div class="empty">Log a few completed shifts to unlock insights.</div>':''}
+
+    ${renderQuarterlyTaxCard(completed, today)}
+
+    <div class="section-label">Backup &amp; Export</div>
+    <div class="card">
+      <div class="card-title">Keep Your Own Copy</div>
+      <div style="font-size:12.5px;color:var(--text-dim);line-height:1.5;margin-bottom:12px;">
+        Your data lives only in this browser on this device. Export a backup now and then — save it to Files, email it to yourself, or use the CSV for taxes.
+      </div>
+      <button class="btn btn-primary" id="export-json" style="margin-bottom:8px;">Export Full Backup (JSON)</button>
+      <button class="btn btn-ghost" id="export-csv">Export Shifts as CSV</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Restore From a Backup</div>
+      <div style="font-size:12.5px;color:var(--text-dim);line-height:1.5;margin-bottom:12px;">
+        Pick a JSON backup file you exported earlier. This replaces whatever is currently in the app with what's in that file.
+      </div>
+      <label class="btn btn-ghost" for="restore-file-input" style="display:block;text-align:center;">Choose Backup File (.json)</label>
+      <input type="file" id="restore-file-input" accept="application/json,.json" style="display:none;">
+      <div id="restore-status" style="font-size:11px;color:var(--text-faint);margin-top:8px;"></div>
+    </div>
+  `;
+}
+
+/* ======================= QUARTERLY ESTIMATED TAX ======================= */
+function getQuarterPeriods(year){
+  return [
+    {label:'Q1', start:`${year}-01-01`, end:`${year}-03-31`, due:`Apr 15, ${year}`},
+    {label:'Q2', start:`${year}-04-01`, end:`${year}-05-31`, due:`Jun 15, ${year}`},
+    {label:'Q3', start:`${year}-06-01`, end:`${year}-08-31`, due:`Sep 15, ${year}`},
+    {label:'Q4', start:`${year}-09-01`, end:`${year}-12-31`, due:`Jan 15, ${year+1}`}
+  ];
+}
+
+function renderQuarterlyTaxCard(completed, today){
+  const year = Number(today.slice(0,4));
+  const periods = getQuarterPeriods(year);
+  const rows = periods.map(p=>{
+    const inRange = completed.filter(s=> s.date>=p.start && s.date<=p.end);
+    const net = sumAgg(inRange).net;
+    const tax = Math.max(0, net) * 0.153;
+    const current = today>=p.start && today<=p.end;
+    return `
+      <div class="stat-box" style="${current?'border:1px solid var(--amber-dim);':''}">
+        <div class="label">${p.label} ${current?'· current':''}</div>
+        <div class="value num" style="font-size:19px;">${fmtMoney(net)} net</div>
+        <div style="font-size:12px;color:var(--amber);margin-top:2px;font-family:'JetBrains Mono',monospace;">${fmtMoney(tax)} est. tax</div>
+        <div style="font-size:10.5px;color:var(--text-faint);margin-top:4px;">Due ${p.due}</div>
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <div class="section-label">Estimated Quarterly Taxes (${year})</div>
+    <div class="card">
+      <div class="card-title">Rough Estimate Only: Net Income × 15.3%</div>
+      <div class="stat-grid">${rows}</div>
+    </div>
+  `;
+}
+
+/* ======================= EVENT HANDLERS ======================= */
+function attachViewHandlers(){
+  // tab nav
+  document.querySelectorAll('.tabbar button').forEach(b=>{
+    b.onclick = ()=>{ currentView = b.dataset.view; editingShiftId=null; editingFillupId=null; addingPlatform=false; formDraft=null; fillupIsFull=true; render(); };
+  });
+
+  if(currentView==='home'){
+    const qb = document.getElementById('home-quicklog');
+    if(qb) qb.onclick = ()=>{ currentView='log'; logMode='shift'; render(); };
+  }
+
+  if(currentView==='log'){
+    document.querySelectorAll('.toggle-row button').forEach(b=>{
+      b.onclick = ()=>{ logMode=b.dataset.mode; editingShiftId=null; editingFillupId=null; addingPlatform=false; formDraft=null; fillupIsFull=true; render(); };
+    });
+
+    if(logMode==='shift'){
+      const captureFormDraft = ()=>{
+        formDraft = formDraft || {};
+        document.querySelectorAll('#view-container input[id^="f-"]').forEach(el=>{
+          formDraft[el.id] = el.value;
+        });
+      };
+      const upd = ()=>{
+        captureFormDraft();
+        const start = document.getElementById('f-start').value;
+        const end = document.getElementById('f-end').value;
+        const so = Number(document.getElementById('f-startodo').value)||0;
+        const eo = Number(document.getElementById('f-endodo').value)||0;
+        document.getElementById('prev-hours').textContent = end ? fmtNum(computeHours(start,end)) : '—';
+        document.getElementById('prev-miles').textContent = eo ? fmtNum(Math.max(0,eo-so),0) : '—';
+        let total = 0;
+        allPlatforms().forEach(p=>{ const el=document.getElementById('f-'+p.key); if(el) total += Number(el.value)||0; });
+        document.getElementById('prev-total').textContent = fmtMoney(total);
+      };
+      ['f-date','f-start','f-end','f-startodo','f-endodo','f-expenses', ...allPlatforms().map(p=>'f-'+p.key)].forEach(id=>{
+        const el = document.getElementById(id);
+        if(el) el.oninput = upd;
+      });
+      upd();
+
+      const showAddBtn = document.getElementById('show-add-platform');
+      if(showAddBtn) showAddBtn.onclick = ()=>{ captureFormDraft(); addingPlatform=true; render(); };
+      const confirmAddBtn = document.getElementById('confirm-add-platform');
+      if(confirmAddBtn) confirmAddBtn.onclick = async ()=>{
+        captureFormDraft();
+        const nameInput = document.getElementById('new-platform-name');
+        const name = nameInput.value.trim();
+        if(!name){ showToast('Enter a platform name'); return; }
+        const key = 'custom_' + name.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'') + '_' + uid();
+        const colors = ['#60a5fa','#f4b740','#4ade80','#fb7185','#a78bfa','#fb923c'];
+        const color = colors[customPlatforms.length % colors.length];
+        customPlatforms.push({key, label:name, color});
+        await saveCustomPlatforms();
+        addingPlatform = false;
+        showToast(name+' added');
+        render();
+      };
+
+      document.querySelectorAll('[data-edit-plat]').forEach(b=>{
+        b.onclick = async ()=>{
+          captureFormDraft();
+          const key = b.dataset.editPlat;
+          const cp = customPlatforms.find(p=>p.key===key);
+          if(!cp) return;
+          const newName = prompt('Rename platform:', cp.label);
+          if(newName===null) return;
+          const trimmed = newName.trim();
+          if(!trimmed){ showToast('Name cannot be empty'); return; }
+          cp.label = trimmed;
+          await saveCustomPlatforms();
+          showToast('Platform renamed');
+          render();
+        };
+      });
+      document.querySelectorAll('[data-del-plat]').forEach(b=>{
+        b.onclick = async ()=>{
+          const key = b.dataset.delPlat;
+          if(platformHasAnyData(key)){ showToast("Can't delete — this platform already has earnings recorded"); return; }
+          if(!confirm('Delete this platform?')) return;
+          captureFormDraft();
+          customPlatforms = customPlatforms.filter(p=>p.key!==key);
+          await saveCustomPlatforms();
+          if(formDraft) delete formDraft['f-'+key];
+          showToast('Platform deleted');
+          render();
+        };
+      });
+
+      document.getElementById('save-shift').onclick = async ()=>{
+        const date = document.getElementById('f-date').value;
+        const startTime = document.getElementById('f-start').value;
+        const endTime = document.getElementById('f-end').value;
+        const startOdo = document.getElementById('f-startodo').value;
+        const endOdo = document.getElementById('f-endodo').value;
+        if(!date || !startTime || startOdo===''){ showToast('Date, start time, and start odometer are required'); return; }
+        if(endOdo!=='' && Number(endOdo) < Number(startOdo)){ showToast('End odometer must be ≥ start odometer'); return; }
+        const record = {
+          id: editingShiftId || uid(),
+          date, startTime,
+          endTime: endTime || null,
+          startOdo,
+          endOdo: endOdo!=='' ? endOdo : null,
+          expenses: document.getElementById('f-expenses').value || 0
+        };
+        allPlatforms().forEach(p=>{ const el=document.getElementById('f-'+p.key); record[p.key] = el ? (el.value||0) : 0; });
+
+        if(editingShiftId){
+          const idx = shifts.findIndex(s=>s.id===editingShiftId);
+          shifts[idx] = record;
+          editingShiftId = null;
+        } else {
+          shifts.push(record);
+        }
+        await saveShifts();
+        formDraft = null;
+        showToast(record.endTime && record.endOdo ? 'Shift saved' : 'Shift started — finish it later from History');
+        currentView='history';
+        render();
+      };
+
+      const cancelBtn = document.getElementById('cancel-edit-shift');
+      if(cancelBtn) cancelBtn.onclick = ()=>{ editingShiftId=null; addingPlatform=false; formDraft=null; currentView='home'; render(); };
+    }
+
+    if(logMode==='gas'){
+      document.querySelectorAll('[data-filltype]').forEach(b=>{
+        b.onclick = ()=>{ fillupIsFull = (b.dataset.filltype==='full'); render(); };
+      });
+
+      const upd = ()=>{
+        const gallons = Number(document.getElementById('g-gallons').value)||0;
+        const price = Number(document.getElementById('g-price').value)||0;
+        document.getElementById('prev-gastotal').textContent = fmtMoney(gallons*price);
+        const mpgEl = document.getElementById('prev-mpg');
+        if(mpgEl){
+          const odo = Number(document.getElementById('g-odo').value)||0;
+          // Preview only: compares against the last FULL fill-up before this odometer.
+          const priorFulls = fillups.filter(f=>f.id!==editingFillupId && f.isFull!==false && f.odometer<odo).sort((a,b)=>b.odometer-a.odometer);
+          const prev = priorFulls[0];
+          if(prev && gallons>0){
+            mpgEl.textContent = fmtNum((odo-prev.odometer)/gallons,1) + ' (est.)';
+          } else {
+            mpgEl.textContent = '—';
+          }
+        }
+      };
+      ['g-odo','g-gallons','g-price'].forEach(id=>{
+        const el = document.getElementById(id);
+        if(el) el.oninput = upd;
+      });
+      upd();
+
+      document.getElementById('save-fillup').onclick = async ()=>{
+        const date = document.getElementById('g-date').value;
+        const odometer = Number(document.getElementById('g-odo').value);
+        const gallons = Number(document.getElementById('g-gallons').value);
+        const pricePerGallon = Number(document.getElementById('g-price').value);
+        if(!date || !odometer || !gallons || !pricePerGallon){ showToast('All fields are required'); return; }
+        const isFull = editingFillupId ? fillupIsFull : fillupIsFull; // current toggle selection
+        const record = { id: editingFillupId || uid(), date, odometer, gallons, pricePerGallon, isFull };
+        if(editingFillupId){
+          const idx = fillups.findIndex(f=>f.id===editingFillupId);
+          fillups[idx] = record;
+          editingFillupId = null;
+        } else {
+          fillups.push(record);
+        }
+        await saveFillups();
+        fillupIsFull = true;
+        showToast(isFull ? 'Fill-up saved' : 'Partial fill saved — it\'ll fold into your next full tank');
+        currentView='history';
+        render();
+      };
+
+      const cancelBtn = document.getElementById('cancel-edit-fillup');
+      if(cancelBtn) cancelBtn.onclick = ()=>{ editingFillupId=null; fillupIsFull=true; currentView='home'; render(); };
+    }
+  }
+
+  if(currentView==='history'){
+    document.querySelectorAll('[data-edit-shift]').forEach(b=>{
+      b.onclick = ()=>{ editingShiftId=b.dataset.editShift; logMode='shift'; addingPlatform=false; formDraft=null; currentView='log'; render(); };
+    });
+    document.querySelectorAll('[data-del-shift]').forEach(b=>{
+      b.onclick = async ()=>{
+        if(!confirm('Delete this shift?')) return;
+        shifts = shifts.filter(s=>s.id!==b.dataset.delShift);
+        await saveShifts();
+        showToast('Shift deleted');
+        render();
+      };
+    });
+    document.querySelectorAll('[data-edit-fillup]').forEach(b=>{
+      b.onclick = ()=>{
+        editingFillupId=b.dataset.editFillup;
+        const f = fillups.find(x=>x.id===editingFillupId);
+        fillupIsFull = f ? (f.isFull !== false) : true;
+        logMode='gas'; currentView='log'; render();
+      };
+    });
+    document.querySelectorAll('[data-del-fillup]').forEach(b=>{
+      b.onclick = async ()=>{
+        if(!confirm('Delete this fill-up?')) return;
+        fillups = fillups.filter(f=>f.id!==b.dataset.delFillup);
+        await saveFillups();
+        showToast('Fill-up deleted');
+        render();
+      };
+    });
+  }
+
+  if(currentView==='reports'){
+    document.querySelectorAll('.segmented button').forEach(b=>{
+      b.onclick = ()=>{ reportsRange=b.dataset.range; render(); };
+    });
+    const exportJsonBtn = document.getElementById('export-json');
+    if(exportJsonBtn) exportJsonBtn.onclick = ()=>{
+      const backup = { exportedAt: new Date().toISOString(), shifts, fillups, customPlatforms };
+      downloadFile(JSON.stringify(backup, null, 2), `gig-work-tracker-backup-${todayISO()}.json`, 'application/json');
+      showToast('Backup downloaded');
+    };
+    const exportCsvBtn = document.getElementById('export-csv');
+    if(exportCsvBtn) exportCsvBtn.onclick = ()=>{
+      const periods = getPeriods();
+      const platCols = allPlatforms();
+      const header = ['Date','Start Time','End Time','Start Odo','End Odo','Hours','Miles',
+        ...platCols.map(p=>p.label), 'Total Earnings','Gas Cost','Expenses','Net Pay','$/hr'];
+      const rows = [...shifts].sort((a,b)=>a.date.localeCompare(b.date)).map(s=>{
+        const d = deriveShift(s, periods);
+        return [
+          s.date, s.startTime||'', s.endTime||'', s.startOdo||'', s.endOdo||'',
+          d.hours.toFixed(2), d.miles.toFixed(0),
+          ...platCols.map(p=>(Number(s[p.key])||0).toFixed(2)),
+          d.totalEarnings.toFixed(2), d.gasCost.toFixed(2), d.expenses.toFixed(2),
+          d.net.toFixed(2), d.perHourGross.toFixed(2)
+        ];
+      });
+      const csv = [header, ...rows].map(r=>r.map(csvEscape).join(',')).join('\n');
+      downloadFile(csv, `gig-work-tracker-shifts-${todayISO()}.csv`, 'text/csv');
+      showToast('CSV downloaded');
+    };
+
+    const restoreInput = document.getElementById('restore-file-input');
+    if(restoreInput) restoreInput.onchange = (e)=>{
+      const file = e.target.files[0];
+      if(!file) return;
+      const statusEl = document.getElementById('restore-status');
+      const reader = new FileReader();
+      reader.onload = async (ev)=>{
+        try{
+          const data = JSON.parse(ev.target.result);
+          if(!Array.isArray(data.shifts) || !Array.isArray(data.fillups)){
+            throw new Error('This file is missing shifts or fillups data.');
+          }
+          const count = data.shifts.length;
+          if(!confirm(`This backup has ${count} shift(s)${data.exportedAt ? ' from '+new Date(data.exportedAt).toLocaleString() : ''}. Restoring will replace everything currently in the app. Continue?`)) {
+            restoreInput.value = '';
+            return;
+          }
+          shifts = data.shifts;
+          fillups = data.fillups;
+          customPlatforms = Array.isArray(data.customPlatforms) ? data.customPlatforms : [];
+          await saveShifts();
+          await saveFillups();
+          await saveCustomPlatforms();
+          showToast('Backup restored');
+          currentView = 'home';
+          render();
+        }catch(err){
+          statusEl.textContent = 'Could not read that file — make sure it\'s the .json backup, not the .csv.';
+          statusEl.style.color = 'var(--rose)';
+        }
+      };
+      reader.readAsText(file);
+    };
+  }
+}
+
+/* ======================= INIT ======================= */
+(async function init(){
+  document.getElementById('view-container').innerHTML = '<div class="empty">Loading your data…</div>';
+  await loadData();
+  render();
+})();
+</script>
+</body>
+</html>
