@@ -409,6 +409,7 @@ let customPlatforms = []; // {key, label}
 let currentView = 'home';
 let logMode = 'shift'; // 'shift' | 'gas'
 let reportsRange = 'week'; // day|week|month|year
+let reportsDate = null; // anchor date for browsing; defaults to today, set on init
 let editingShiftId = null;
 let editingFillupId = null;
 let addingPlatform = false;
@@ -670,8 +671,46 @@ function isSameYear(iso, ref){
 }
 
 function weekOfMonth(iso){
+  // Numbers weeks using the same Monday–Sunday boundaries as everywhere else in the app,
+  // so a week number here always matches the actual week shown in Week view.
   const d = new Date(iso+'T00:00:00');
-  return Math.ceil((d.getDate())/7);
+  const y = d.getFullYear(), m = d.getMonth()+1;
+  const monthStartMonday = mondayOfWeek(`${y}-${String(m).padStart(2,'0')}-01`);
+  const thisMonday = mondayOfWeek(iso);
+  const diffDays = Math.round((new Date(thisMonday+'T00:00:00') - new Date(monthStartMonday+'T00:00:00'))/86400000);
+  return Math.floor(diffDays/7)+1;
+}
+
+function addDaysISO(iso, n){
+  const d = new Date(iso+'T00:00:00');
+  d.setDate(d.getDate()+n);
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function addMonthsISO(iso, n){
+  const d = new Date(iso+'T00:00:00');
+  d.setMonth(d.getMonth()+n);
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function mondayOfWeek(iso){
+  const d = new Date(iso+'T00:00:00');
+  const day = d.getDay();
+  const diffToMonday = (day===0) ? -6 : 1-day;
+  d.setDate(d.getDate()+diffToMonday);
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), da=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${da}`;
+}
+function daysInMonth(year, month1to12){
+  return new Date(year, month1to12, 0).getDate();
+}
+function fmtDateTiny(iso){
+  const d = new Date(iso+'T00:00:00');
+  return d.toLocaleDateString('en-US',{month:'numeric',day:'numeric'});
+}
+function fmtDayAbbrev(iso){
+  const d = new Date(iso+'T00:00:00');
+  return d.toLocaleDateString('en-US',{weekday:'short'}).slice(0,1);
 }
 
 function hourLabel(h){
@@ -684,6 +723,37 @@ function hourLabel(h){
 function platformLabel(key){
   const p = allPlatforms().find(p=>p.key===key);
   return p ? p.label : key;
+}
+
+/* Small inline SVG bar chart. items: [{label, value, valueLabel, onClick}] */
+function renderBarChart(items, opts){
+  opts = opts || {};
+  const height = opts.height || 130;
+  const w = 320;
+  const n = Math.max(1, items.length);
+  const gap = 6;
+  const barW = (w - gap*(n+1))/n;
+  const maxAbs = Math.max(1, ...items.map(i=>Math.abs(i.value)));
+  const zeroY = height - 22;
+  const chartH = height - 36;
+  let bars = '';
+  items.forEach((it,i)=>{
+    const x = gap + i*(barW+gap);
+    const h = Math.max(2, (Math.abs(it.value)/maxAbs)*chartH);
+    const y = it.value>=0 ? (zeroY-h) : zeroY;
+    const color = it.value>=0 ? 'var(--green)' : 'var(--rose)';
+    const clickAttr = it.onClick ? ` style="cursor:pointer" onclick="${it.onClick}"` : '';
+    bars += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${h.toFixed(1)}" rx="3" fill="${color}"${clickAttr}><title>${it.label}: ${it.valueLabel}</title></rect>`;
+    bars += `<text x="${(x+barW/2).toFixed(1)}" y="${(zeroY+13)}" text-anchor="middle" font-size="8.5" fill="var(--text-faint)" font-family="Inter">${it.label}</text>`;
+  });
+  return `<svg viewBox="0 0 ${w} ${height}" style="width:100%;height:${height}px;overflow:visible;">${bars}</svg>`;
+}
+
+/* Called from inline SVG bar onclick handlers to drill down into a period */
+function chartDrill(range, date){
+  reportsRange = range;
+  reportsDate = date;
+  render();
 }
 
 /* Best N-hour block to start, based on full shift history (completed shifts only) */
@@ -780,7 +850,7 @@ function renderHome(){
       <div class="stat-box"><div class="label">Hours</div><div class="value blue num">${fmtNum(tAgg.hours)}</div></div>
       <div class="stat-box"><div class="label">Miles</div><div class="value blue num">${fmtNum(tAgg.miles,0)}</div></div>
       <div class="stat-box"><div class="label">Gas Cost</div><div class="value rose num">${fmtMoney(tAgg.gasCost)}</div></div>
-      <div class="stat-box"><div class="label">Net Pay</div><div class="value green num">${fmtMoney(tAgg.net)}</div></div>
+      <div class="stat-box"><div class="label">Gross Earnings</div><div class="value num">${fmtMoney(tAgg.totalEarnings)}</div></div>
     </div>
     ${!tAgg.anyGasData && tAgg.hours>0 ? '<div style="margin-top:10px;font-size:12px;color:var(--text-dim)">No gas data yet for this period — log a fill-up to calculate gas cost.</div>' : ''}
   </div>
@@ -1022,20 +1092,21 @@ function renderHistory(){
 /* ======================= REPORTS ======================= */
 function renderReports(){
   const today = todayISO();
+  if(!reportsDate) reportsDate = today;
+  const anchor = reportsDate;
   const derived = allDerivedShifts();
   const completed = derived.filter(s=>!s.d.open);
 
   let filtered;
-  if(reportsRange==='day') filtered = derived.filter(s=>isSameDay(s.date,today));
-  else if(reportsRange==='week') filtered = derived.filter(s=>isSameWeek(s.date,today));
-  else if(reportsRange==='month') filtered = derived.filter(s=>isSameMonth(s.date,today));
-  else filtered = derived.filter(s=>isSameYear(s.date,today));
+  if(reportsRange==='day') filtered = derived.filter(s=>isSameDay(s.date,anchor));
+  else if(reportsRange==='week') filtered = derived.filter(s=>isSameWeek(s.date,anchor));
+  else if(reportsRange==='month') filtered = derived.filter(s=>isSameMonth(s.date,anchor));
+  else filtered = derived.filter(s=>isSameYear(s.date,anchor));
 
   const agg = sumAgg(filtered);
 
-  // Best hour of day (single-hour view, kept for the month/year insight cards below)
-  // Best week of this month
-  const monthShifts = completed.filter(s=>isSameMonth(s.date, today));
+  // Best week of the anchor month
+  const monthShifts = completed.filter(s=>isSameMonth(s.date, anchor));
   const weekBuckets = {};
   monthShifts.forEach(s=>{
     const w = weekOfMonth(s.date);
@@ -1046,8 +1117,8 @@ function renderReports(){
     if(weekBuckets[w]>bestWeekVal){ bestWeekVal = weekBuckets[w]; bestWeek = Number(w); }
   });
 
-  // Best month of this year
-  const yearShifts = completed.filter(s=>isSameYear(s.date, today));
+  // Best month of the anchor year
+  const yearShifts = completed.filter(s=>isSameYear(s.date, anchor));
   const monthBuckets = {};
   yearShifts.forEach(s=>{
     const m = s.date.slice(0,7);
@@ -1067,7 +1138,66 @@ function renderReports(){
   const block2 = computeBestBlock(completed, 2);
   const block4 = computeBestBlock(completed, 4);
 
+  // ---- period label + chart, based on selected range and anchor date ----
+  let periodLabel = '';
+  let chartHtml = '';
+  if(reportsRange==='day'){
+    periodLabel = fmtDateFull(anchor);
+    const dayShift = completed.filter(s=>isSameDay(s.date,anchor));
+    const platTotals = {};
+    dayShift.forEach(s=>{ Object.keys(s.d.earningsByPlatform).forEach(k=>{ if(s.d.earningsByPlatform[k]>0) platTotals[k]=(platTotals[k]||0)+s.d.earningsByPlatform[k]; }); });
+    const items = Object.keys(platTotals).map(k=>({label:platformLabel(k).slice(0,6), value:platTotals[k], valueLabel:fmtMoney(platTotals[k])}));
+    chartHtml = items.length ? renderBarChart(items,{height:120}) : `<div style="font-size:12px;color:var(--text-faint);text-align:center;padding:20px 0;">No earnings logged this day.</div>`;
+  } else if(reportsRange==='week'){
+    const monday = mondayOfWeek(anchor);
+    const sunday = addDaysISO(monday,6);
+    const wNum = weekOfMonth(monday);
+    periodLabel = `Week ${wNum} (${fmtDateTiny(monday)}–${fmtDateTiny(sunday)})`;
+    const items = [];
+    for(let i=0;i<7;i++){
+      const d = addDaysISO(monday,i);
+      const dayAgg = sumAgg(completed.filter(s=>s.date===d));
+      items.push({label:fmtDayAbbrev(d), value:dayAgg.net, valueLabel:fmtMoney(dayAgg.net)+' · '+fmtDateTiny(d), onClick:`chartDrill('day','${d}')`});
+    }
+    chartHtml = renderBarChart(items);
+  } else if(reportsRange==='month'){
+    const y = Number(anchor.slice(0,4)), m = Number(anchor.slice(5,7));
+    periodLabel = monthLabel(anchor.slice(0,7));
+    const monthStart = `${y}-${String(m).padStart(2,'0')}-01`;
+    const dim = daysInMonth(y,m);
+    const monthEnd = `${y}-${String(m).padStart(2,'0')}-${String(dim).padStart(2,'0')}`;
+    let weekStart = mondayOfWeek(monthStart);
+    const items = [];
+    let wIndex = 1;
+    while(weekStart <= monthEnd){
+      const weekEnd = addDaysISO(weekStart,6);
+      const wAgg = sumAgg(completed.filter(s=> s.date>=weekStart && s.date<=weekEnd));
+      items.push({label:'W'+wIndex, value:wAgg.net, valueLabel:fmtMoney(wAgg.net)+' · '+fmtDateTiny(weekStart)+'–'+fmtDateTiny(weekEnd), onClick:`chartDrill('week','${weekStart}')`});
+      wIndex++;
+      weekStart = addDaysISO(weekStart,7);
+    }
+    chartHtml = renderBarChart(items);
+  } else {
+    periodLabel = anchor.slice(0,4);
+    const items = [];
+    for(let m=1;m<=12;m++){
+      const mm = String(m).padStart(2,'0');
+      const monthIso = `${anchor.slice(0,4)}-${mm}-01`;
+      const mAgg = sumAgg(completed.filter(s=>s.date.slice(0,7)===`${anchor.slice(0,4)}-${mm}`));
+      items.push({label:monthIso.slice(5,7), value:mAgg.net, valueLabel:fmtMoney(mAgg.net)+' · '+monthLabel(monthIso.slice(0,7)), onClick:`chartDrill('month','${monthIso}')`});
+    }
+    chartHtml = renderBarChart(items);
+  }
+
   return `
+    <div class="card" style="padding:14px 16px;">
+      <div class="card-title" style="margin-bottom:8px;">Browse By Date</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="date" id="reports-date-picker" value="${anchor}" style="flex:1;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:9px 10px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;">
+        ${anchor!==today ? `<button class="btn btn-ghost btn-small" id="reports-jump-today">Today</button>` : ''}
+      </div>
+    </div>
+
     <div class="segmented">
       <button data-range="day" class="${reportsRange==='day'?'active':''}">Day</button>
       <button data-range="week" class="${reportsRange==='week'?'active':''}">Week</button>
@@ -1076,7 +1206,7 @@ function renderReports(){
     </div>
 
     <div class="card">
-      <div class="card-title">Summary — ${reportsRange==='day'?'Today':reportsRange==='week'?'This Week':reportsRange==='month'?'This Month':'This Year'}</div>
+      <div class="card-title">Summary — ${periodLabel}</div>
       <div class="stat-grid">
         <div class="stat-box"><div class="label">Hours</div><div class="value blue num">${fmtNum(agg.hours)}</div></div>
         <div class="stat-box"><div class="label">Miles</div><div class="value blue num">${fmtNum(agg.miles,0)}</div></div>
@@ -1085,6 +1215,12 @@ function renderReports(){
         <div class="stat-box"><div class="label">Expenses</div><div class="value rose num">${fmtMoney(agg.expenses)}</div></div>
         <div class="stat-box"><div class="label">Net Pay</div><div class="value green num">${fmtMoney(agg.net)}</div></div>
       </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">${reportsRange==='day' ? 'Earnings by Platform' : reportsRange==='year' ? 'Net Pay by Month' : 'Net Pay by '+(reportsRange==='week'?'Day':'Week')}</div>
+      ${chartHtml}
+      ${reportsRange!=='day' ? '<div style="font-size:10.5px;color:var(--text-faint);text-align:center;margin-top:6px;">Tap a bar to drill in</div>' : ''}
     </div>
 
     <div class="section-label">Today's Best Blocks</div>
@@ -1098,10 +1234,10 @@ function renderReports(){
 
     <div class="section-label">More Insights</div>
     <div class="insight-card">
-      <div class="itxt">This month, <b>Week ${bestWeek||'—'}</b> was your best week${bestWeek?` (net ${fmtMoney(bestWeekVal)})`:''}.</div>
+      <div class="itxt">In ${monthLabel(anchor.slice(0,7))}, <b>Week ${bestWeek||'—'}</b> was the best week${bestWeek?` (net ${fmtMoney(bestWeekVal)})`:''}.</div>
     </div>
     <div class="insight-card">
-      <div class="itxt">This year, <b>${monthLabel(bestMonth)}</b> was your best month${bestMonth?` (net ${fmtMoney(bestMonthVal)})`:''}.</div>
+      <div class="itxt">In ${anchor.slice(0,4)}, <b>${monthLabel(bestMonth)}</b> was the best month${bestMonth?` (net ${fmtMoney(bestMonthVal)})`:''}.</div>
     </div>
     ${completed.length===0?'<div class="empty">Log a few completed shifts to unlock insights.</div>':''}
 
@@ -1383,6 +1519,10 @@ function attachViewHandlers(){
     document.querySelectorAll('.segmented button').forEach(b=>{
       b.onclick = ()=>{ reportsRange=b.dataset.range; render(); };
     });
+    const datePicker = document.getElementById('reports-date-picker');
+    if(datePicker) datePicker.onchange = ()=>{ reportsDate = datePicker.value || todayISO(); render(); };
+    const jumpTodayBtn = document.getElementById('reports-jump-today');
+    if(jumpTodayBtn) jumpTodayBtn.onclick = ()=>{ reportsDate = todayISO(); render(); };
     const exportJsonBtn = document.getElementById('export-json');
     if(exportJsonBtn) exportJsonBtn.onclick = ()=>{
       const backup = { exportedAt: new Date().toISOString(), shifts, fillups, customPlatforms };
