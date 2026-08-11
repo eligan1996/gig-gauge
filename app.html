@@ -128,6 +128,9 @@
   .stat-box-full .label{font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.6px;font-weight:600;}
   .stat-box-full .value{font-family:'Oswald',sans-serif;font-size:28px;font-weight:600;margin-top:6px;color:var(--text);}
   .stat-box-full .value.green{color:var(--green);}
+  .stat-box-full .value.blue{color:var(--blue);}
+  .stat-box-full .value.amber{color:var(--amber);}
+  .stat-box-full .value.rose{color:var(--rose);}
 
   /* ---- big rate display (gauge replacement) ---- */
   .rate-wrap{display:flex;flex-direction:column;align-items:center;padding:10px 0 4px;}
@@ -328,6 +331,15 @@
     color:var(--text-faint);
     margin:20px 0 8px;
   }
+  .period-heading{
+    font-family:'Oswald',sans-serif;
+    font-size:18px;
+    font-weight:700;
+    color:var(--text);
+    letter-spacing:0.3px;
+    margin:24px 0 8px;
+  }
+  .period-heading:first-child{margin-top:0;}
   .section-label:first-child{margin-top:0;}
   .year-header{
     font-family:'Oswald',sans-serif;
@@ -848,26 +860,35 @@ function render(){
 }
 
 /* ======================= HOME ======================= */
-function renderHomePeriodBlock(periodLabel, agg){
+function periodColorClass(periodType){
+  if(periodType==='day') return 'green';
+  if(periodType==='week') return 'blue';
+  if(periodType==='month') return 'amber';
+  return ''; // year — plain white/text, the default .value color
+}
+
+function renderHomePeriodBlock(periodLabel, agg, periodType){
   const tax = Math.max(0, agg.net) * 0.153;
+  const c = periodColorClass(periodType);
+  const netColor = agg.net<0 ? 'rose' : c;
   return `
-    <div class="section-label">${periodLabel}</div>
+    <div class="period-heading">${periodLabel}</div>
     <div class="card">
       <div class="stat-box-full">
         <div class="label">Gross Per Hour, ${periodLabel}</div>
-        <div class="value num">${fmtMoney(agg.perHourGross)}</div>
+        <div class="value ${c} num">${fmtMoney(agg.perHourGross)}</div>
       </div>
       <div class="stat-grid" style="margin-top:10px;">
-        <div class="stat-box"><div class="label">Hours</div><div class="value blue num">${fmtNum(agg.hours)}</div></div>
-        <div class="stat-box"><div class="label">Miles</div><div class="value blue num">${fmtNum(agg.miles,0)}</div></div>
-        <div class="stat-box"><div class="label">Gross Earnings</div><div class="value num">${fmtMoney(agg.totalEarnings)}</div></div>
-        <div class="stat-box"><div class="label">Gas Cost</div><div class="value rose num">${fmtMoney(agg.gasCost)}</div></div>
-        <div class="stat-box"><div class="label">Expenses</div><div class="value rose num">${fmtMoney(agg.expenses)}</div></div>
-        <div class="stat-box"><div class="label">Estimated Tax</div><div class="value amber num">${fmtMoney(tax)}</div></div>
+        <div class="stat-box"><div class="label">Hours</div><div class="value ${c} num">${fmtNum(agg.hours)}</div></div>
+        <div class="stat-box"><div class="label">Miles</div><div class="value ${c} num">${fmtNum(agg.miles,0)}</div></div>
+        <div class="stat-box"><div class="label">Gross Earnings</div><div class="value ${c} num">${fmtMoney(agg.totalEarnings)}</div></div>
+        <div class="stat-box"><div class="label">Gas Cost</div><div class="value ${c} num">${fmtMoney(agg.gasCost)}</div></div>
+        <div class="stat-box"><div class="label">Expenses</div><div class="value ${c} num">${fmtMoney(agg.expenses)}</div></div>
+        <div class="stat-box"><div class="label">Estimated Tax</div><div class="value ${c} num">${fmtMoney(tax)}</div></div>
       </div>
       <div class="stat-box-full" style="margin-top:10px;">
         <div class="label">Net Pay</div>
-        <div class="value green num">${fmtMoney(agg.net)}</div>
+        <div class="value ${netColor} num">${fmtMoney(agg.net)}</div>
       </div>
     </div>
   `;
@@ -887,10 +908,10 @@ function renderHome(){
   const yAgg = sumAgg(yearShifts);
 
   return `
-    ${renderHomePeriodBlock('Today', tAgg)}
-    ${renderHomePeriodBlock('This Week', wAgg)}
-    ${renderHomePeriodBlock('This Month', mAgg)}
-    ${renderHomePeriodBlock('This Year', yAgg)}
+    ${renderHomePeriodBlock('Today', tAgg, 'day')}
+    ${renderHomePeriodBlock('This Week', wAgg, 'week')}
+    ${renderHomePeriodBlock('This Month', mAgg, 'month')}
+    ${renderHomePeriodBlock('This Year', yAgg, 'year')}
     <button class="btn btn-primary" id="home-quicklog">+ Log Today's Shift</button>
   `;
 }
@@ -1249,7 +1270,7 @@ function renderReports(){
       <button data-range="year" class="${reportsRange==='year'?'active':''}">Year</button>
     </div>
 
-    ${renderHomePeriodBlock(periodLabel, agg)}
+    ${renderHomePeriodBlock(periodLabel, agg, reportsRange)}
 
     <div class="card">
       <div class="card-title">${reportsRange==='day' ? 'Gross Earnings by Platform' : reportsRange==='year' ? 'Net Pay by Month' : 'Net Pay by '+(reportsRange==='week'?'Day':'Week')}</div>
