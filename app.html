@@ -579,6 +579,26 @@ function isOpenShift(shift){
   return !shift.endTime || shift.endOdo===''||shift.endOdo===null||shift.endOdo===undefined;
 }
 
+// Highest end-odometer reading among completed shifts on or before the given date,
+// excluding a specific shift (used when editing). Used to catch a start odometer
+// that's physically impossible — lower than a reading the car already had.
+function findPriorMaxEndOdo(date, excludeId){
+  let maxOdo = null;
+  shifts.forEach(s=>{
+    if(s.id===excludeId) return;
+    if(s.endOdo===''||s.endOdo===null||s.endOdo===undefined) return;
+    if(s.date > date) return;
+    const eOdo = Number(s.endOdo);
+    if(maxOdo===null || eOdo>maxOdo) maxOdo = eOdo;
+  });
+  return maxOdo;
+}
+
+// True if any OTHER shift is currently open ("in progress"), excluding a given id.
+function hasOtherOpenShift(excludeId){
+  return shifts.some(s=> s.id!==excludeId && isOpenShift(s));
+}
+
 /* --- gas periods derived from fillups, sorted by odometer ---
    A "full" fill-up closes a period and lets us compute real MPG.
    A "partial" fill-up (a splash/top-off, not filled to the top) can't be
@@ -792,6 +812,42 @@ function renderBarChart(items, opts){
   return `<svg viewBox="0 0 ${w} ${height}" style="width:100%;height:${height}px;overflow:visible;">${bars}</svg>`;
 }
 
+/* Line chart for time-series trends (Net Pay by Day/Week/Month) — shows the shape of
+   change over time more clearly than bars. Uses symmetric scaling around zero so
+   negative values (a losing period) render correctly both above and below the line. */
+function renderLineChart(items, opts){
+  opts = opts || {};
+  const height = opts.height || 130;
+  const w = 320;
+  const n = Math.max(1, items.length);
+  const padX = 18;
+  const usableW = w - padX*2;
+  const stepX = n>1 ? usableW/(n-1) : 0;
+  const maxAbs = Math.max(1, ...items.map(i=>Math.abs(i.value)));
+  const labelY = height - 6;
+  const plotH = height - 26;
+  const zeroY = plotH/2 + 6;
+  const halfRange = plotH/2 - 6;
+
+  const pts = items.map((it,i)=>{
+    const x = padX + (n>1 ? i*stepX : usableW/2);
+    const y = zeroY - (it.value/maxAbs)*halfRange;
+    return {x, y, ...it};
+  });
+
+  const pathD = pts.map((p,i)=> (i===0?'M':'L') + p.x.toFixed(1) + ' ' + p.y.toFixed(1)).join(' ');
+
+  let svg = `<line x1="${padX}" y1="${zeroY.toFixed(1)}" x2="${w-padX}" y2="${zeroY.toFixed(1)}" stroke="var(--border)" stroke-width="1" stroke-dasharray="3,3"/>`;
+  svg += `<path d="${pathD}" fill="none" stroke="var(--amber)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+  pts.forEach(p=>{
+    const color = p.value>=0 ? 'var(--green)' : 'var(--rose)';
+    const clickAttr = p.onClick ? ` style="cursor:pointer" onclick="${p.onClick}"` : '';
+    svg += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="6" fill="${color}" stroke="var(--surface)" stroke-width="2"${clickAttr}><title>${p.label}: ${p.valueLabel}</title></circle>`;
+    svg += `<text x="${p.x.toFixed(1)}" y="${labelY}" text-anchor="middle" font-size="8.5" fill="var(--text-faint)" font-family="Inter">${p.label}</text>`;
+  });
+  return `<svg viewBox="0 0 ${w} ${height}" style="width:100%;height:${height}px;overflow:visible;">${svg}</svg>`;
+}
+
 /* Called from inline SVG bar onclick handlers to drill down into a period */
 function chartDrill(range, date){
   reportsRange = range;
@@ -800,10 +856,14 @@ function chartDrill(range, date){
 }
 
 /* Best N-hour block to start, based on full shift history (completed shifts only) */
-function computeBestBlock(derivedCompleted, blockLen){
+function computeBestBlock(derivedCompleted, blockLen, dayOfWeek){
   const buckets = {};
   for(let h=0;h<24;h++) buckets[h] = {hours:0, earnings:0, platformEarnings:{}};
   derivedCompleted.forEach(s=>{
+    if(dayOfWeek!==undefined && dayOfWeek!==null){
+      const d = new Date(s.date+'T00:00:00');
+      if(d.getDay() !== dayOfWeek) return; // only count shifts on the matching day of the week
+    }
     const sm = timeToMinutes(s.startTime);
     if(sm===null || s.d.hours<=0) return;
     const h = Math.floor(sm/60);
@@ -873,7 +933,7 @@ function periodColorClass(periodType){
 }
 
 function renderHomePeriodBlock(periodLabel, agg, periodType){
-  const tax = Math.max(0, agg.net) * 0.153;
+  const tax = Math.max(0, agg.totalEarnings) * 0.153;
   const c = periodColorClass(periodType);
   const netColor = agg.net<0 ? 'rose' : c;
   return `
@@ -992,6 +1052,7 @@ function renderShiftForm(){
           <div class="add-platform-form">
             <input type="text" id="new-platform-name" placeholder="Platform name, e.g. Amazon Flex">
             <button type="button" class="btn btn-primary btn-small" id="confirm-add-platform">Add</button>
+            <button type="button" class="btn btn-ghost btn-small" id="cancel-add-platform">Cancel</button>
           </div>
           <div style="font-size:11px;color:var(--text-faint);margin-top:6px;">Once added, a platform stays available for all future shifts.</div>
         `}
@@ -1205,8 +1266,10 @@ function renderReports(){
     return d.toLocaleDateString('en-US',{month:'long', year:'numeric'});
   }
 
-  const block2 = computeBestBlock(completed, 2);
-  const block4 = computeBestBlock(completed, 4);
+  const todayDow = new Date(today+'T00:00:00').getDay();
+  const todayDowName = new Date(today+'T00:00:00').toLocaleDateString('en-US',{weekday:'long'});
+  const block2 = computeBestBlock(completed, 2, todayDow);
+  const block4 = computeBestBlock(completed, 4, todayDow);
 
   // ---- period label + chart, based on selected range and anchor date ----
   let periodLabel = '';
@@ -1229,7 +1292,7 @@ function renderReports(){
       const dayAgg = sumAgg(completed.filter(s=>s.date===d));
       items.push({label:fmtDayAbbrev(d), value:dayAgg.net, valueLabel:fmtMoney(dayAgg.net)+' · '+fmtDateTiny(d), onClick:`chartDrill('day','${d}')`});
     }
-    chartHtml = renderBarChart(items);
+    chartHtml = renderLineChart(items);
   } else if(reportsRange==='month'){
     const y = Number(anchor.slice(0,4)), m = Number(anchor.slice(5,7));
     periodLabel = monthLabel(anchor.slice(0,7));
@@ -1246,7 +1309,7 @@ function renderReports(){
       wIndex++;
       weekStart = addDaysISO(weekStart,7);
     }
-    chartHtml = renderBarChart(items);
+    chartHtml = renderLineChart(items);
   } else {
     periodLabel = anchor.slice(0,4);
     const items = [];
@@ -1256,7 +1319,7 @@ function renderReports(){
       const mAgg = sumAgg(completed.filter(s=>s.date.slice(0,7)===`${anchor.slice(0,4)}-${mm}`));
       items.push({label:monthIso.slice(5,7), value:mAgg.net, valueLabel:fmtMoney(mAgg.net)+' · '+monthLabel(monthIso.slice(0,7)), onClick:`chartDrill('month','${monthIso}')`});
     }
-    chartHtml = renderBarChart(items);
+    chartHtml = renderLineChart(items);
   }
 
   return `
@@ -1283,14 +1346,14 @@ function renderReports(){
       ${reportsRange!=='day' ? '<div style="font-size:10.5px;color:var(--text-faint);text-align:center;margin-top:6px;">Tap a bar to drill in</div>' : ''}
     </div>
 
-    <div class="section-label">Today's Best Blocks</div>
+    <div class="section-label">Best Blocks for ${todayDowName}s</div>
     <div class="insight-card">
-      <div class="itxt">Best 2-hour block to start today: <b>${block2 ? hourLabel(block2.start) : '—'}</b>${block2?` — avg ${fmtMoney(block2.rate)}/hr | ${joinPlatformList(block2.platformsUsed)||'—'}`:' (not enough history yet)'}.</div>
+      <div class="itxt">Best 2-hour block to start on a ${todayDowName}: <b>${block2 ? hourLabel(block2.start) : '—'}</b>${block2?` — avg ${fmtMoney(block2.rate)}/hr | ${joinPlatformList(block2.platformsUsed)||'—'}`:` (not enough ${todayDowName} history yet)`}.</div>
     </div>
     <div class="insight-card">
-      <div class="itxt">Best 4-hour block to start today: <b>${block4 ? hourLabel(block4.start) : '—'}</b>${block4?` — avg ${fmtMoney(block4.rate)}/hr | ${joinPlatformList(block4.platformsUsed)||'—'}`:' (not enough history yet)'}.</div>
+      <div class="itxt">Best 4-hour block to start on a ${todayDowName}: <b>${block4 ? hourLabel(block4.start) : '—'}</b>${block4?` — avg ${fmtMoney(block4.rate)}/hr | ${joinPlatformList(block4.platformsUsed)||'—'}`:` (not enough ${todayDowName} history yet)`}.</div>
     </div>
-    <div style="font-size:11px;color:var(--text-faint);margin:-4px 0 16px;">Based on your full shift history by start time, not just today's entries.</div>
+    <div style="font-size:11px;color:var(--text-faint);margin:-4px 0 16px;">Based only on your past ${todayDowName}s, by start time — this gets more accurate the more ${todayDowName}s you log.</div>
 
     <div class="section-label">More Insights</div>
     <div class="insight-card">
@@ -1354,14 +1417,16 @@ function renderQuarterlyTaxCard(completed, today){
   const periods = getQuarterPeriods(year);
   const rows = periods.map(p=>{
     const inRange = completed.filter(s=> s.date>=p.start && s.date<=p.end);
-    const net = sumAgg(inRange).net;
-    const tax = Math.max(0, net) * 0.153;
+    const periodAgg = sumAgg(inRange);
+    const gross = periodAgg.totalEarnings;
+    const tax = Math.max(0, gross) * 0.153;
     const current = today>=p.start && today<=p.end;
     return `
       <div class="stat-box" style="${current?'border:1px solid var(--amber-dim);':''}">
         <div class="label">${p.label} ${current?'· current':''}</div>
-        <div class="value num" style="font-size:19px;">${fmtMoney(net)} net</div>
+        <div class="value num" style="font-size:19px;">${fmtMoney(gross)} gross</div>
         <div style="font-size:12px;color:var(--amber);margin-top:2px;font-family:'JetBrains Mono',monospace;">${fmtMoney(tax)} est. tax</div>
+        <div style="font-size:10.5px;color:var(--text-dim);margin-top:2px;font-family:'JetBrains Mono',monospace;">${fmtMoney(periodAgg.net)} net</div>
         <div style="font-size:10.5px;color:var(--text-faint);margin-top:4px;">Due ${p.due}</div>
       </div>
     `;
@@ -1370,7 +1435,7 @@ function renderQuarterlyTaxCard(completed, today){
   return `
     <div class="section-label">Estimated Quarterly Taxes (${year})</div>
     <div class="card">
-      <div class="card-title">Rough Estimate Only: Net Income × 15.3%</div>
+      <div class="card-title">Rough Estimate Only: Gross Earnings × 15.3%</div>
       <div class="stat-grid">${rows}</div>
     </div>
   `;
@@ -1435,6 +1500,8 @@ function attachViewHandlers(){
         showToast(name+' added');
         render();
       };
+      const cancelAddBtn = document.getElementById('cancel-add-platform');
+      if(cancelAddBtn) cancelAddBtn.onclick = ()=>{ captureFormDraft(); addingPlatform=false; render(); };
 
       document.querySelectorAll('[data-edit-plat]').forEach(b=>{
         b.onclick = async ()=>{
@@ -1474,6 +1541,16 @@ function attachViewHandlers(){
         const endOdo = document.getElementById('f-endodo').value;
         if(!date || !startTime || startOdo===''){ showToast('Date, start time, and start odometer are required'); return; }
         if(endOdo!=='' && Number(endOdo) < Number(startOdo)){ showToast('End odometer must be ≥ start odometer'); return; }
+        const priorMaxOdo = findPriorMaxEndOdo(date, editingShiftId);
+        if(priorMaxOdo!==null && Number(startOdo) < priorMaxOdo){
+          showToast('Please check the odometer again, value should be more than the end odometer of previous date.');
+          return;
+        }
+        const willBeOpen = !endTime || endOdo==='';
+        if(willBeOpen && hasOtherOpenShift(editingShiftId)){
+          showToast('You already have a shift in progress — finish it before starting a new one.');
+          return;
+        }
         const record = {
           id: editingShiftId || uid(),
           date, startTime,
