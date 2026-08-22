@@ -599,6 +599,19 @@ function hasOtherOpenShift(excludeId){
   return shifts.some(s=> s.id!==excludeId && isOpenShift(s));
 }
 
+// Highest fill-up odometer reading on or before the given date, excluding a
+// specific fill-up (used when editing). Applies to both Full Tank and Partial fill-ups.
+function findPriorMaxFillupOdo(date, excludeId){
+  let maxOdo = null;
+  fillups.forEach(f=>{
+    if(f.id===excludeId) return;
+    if(f.date > date) return;
+    const o = Number(f.odometer);
+    if(maxOdo===null || o>maxOdo) maxOdo = o;
+  });
+  return maxOdo;
+}
+
 /* --- gas periods derived from fillups, sorted by odometer ---
    A "full" fill-up closes a period and lets us compute real MPG.
    A "partial" fill-up (a splash/top-off, not filled to the top) can't be
@@ -1276,11 +1289,7 @@ function renderReports(){
   let chartHtml = '';
   if(reportsRange==='day'){
     periodLabel = fmtDateFull(anchor);
-    const dayShift = completed.filter(s=>isSameDay(s.date,anchor));
-    const platTotals = {};
-    dayShift.forEach(s=>{ Object.keys(s.d.earningsByPlatform).forEach(k=>{ if(s.d.earningsByPlatform[k]>0) platTotals[k]=(platTotals[k]||0)+s.d.earningsByPlatform[k]; }); });
-    const items = Object.keys(platTotals).map(k=>({label:platformLabel(k).slice(0,6), value:platTotals[k], valueLabel:fmtMoney(platTotals[k])}));
-    chartHtml = items.length ? renderBarChart(items,{height:120}) : `<div style="font-size:12px;color:var(--text-faint);text-align:center;padding:20px 0;">No earnings logged this day.</div>`;
+    chartHtml = `<div style="font-size:12.5px;color:var(--text-faint);text-align:center;padding:24px 0;">Line graph not applicable for a single day — pick Week, Month, or Year to see a trend.</div>`;
   } else if(reportsRange==='week'){
     const monday = mondayOfWeek(anchor);
     const sunday = addDaysISO(monday,6);
@@ -1341,7 +1350,7 @@ function renderReports(){
     ${renderHomePeriodBlock(periodLabel, agg, reportsRange)}
 
     <div class="card">
-      <div class="card-title">${reportsRange==='day' ? 'Gross Earnings by Platform' : reportsRange==='year' ? 'Net Pay by Month' : 'Net Pay by '+(reportsRange==='week'?'Day':'Week')}</div>
+      <div class="card-title">${reportsRange==='day' ? 'Net Pay Trend' : reportsRange==='year' ? 'Net Pay by Month' : 'Net Pay by '+(reportsRange==='week'?'Day':'Week')}</div>
       ${chartHtml}
       ${reportsRange!=='day' ? '<div style="font-size:10.5px;color:var(--text-faint);text-align:center;margin-top:6px;">Tap a bar to drill in</div>' : ''}
     </div>
@@ -1613,6 +1622,11 @@ function attachViewHandlers(){
         const gallons = Number(document.getElementById('g-gallons').value);
         const pricePerGallon = Number(document.getElementById('g-price').value);
         if(!date || !odometer || !gallons || !pricePerGallon){ showToast('All fields are required'); return; }
+        const priorMaxOdo = findPriorMaxFillupOdo(date, editingFillupId);
+        if(priorMaxOdo!==null && odometer < priorMaxOdo){
+          showToast('Please check the odometer again, value should be more than the odometer from your previous fill-up.');
+          return;
+        }
         const isFull = editingFillupId ? fillupIsFull : fillupIsFull; // current toggle selection
         const record = { id: editingFillupId || uid(), date, odometer, gallons, pricePerGallon, isFull };
         if(editingFillupId){
